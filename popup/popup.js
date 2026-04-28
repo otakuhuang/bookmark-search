@@ -131,7 +131,8 @@ function setupDownloadButton() {
     if (modelStatus === 'downloadable') {
       try {
         const session = await LanguageModel.create({
-          systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐收藏夹。'
+          systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐收藏夹。',
+          expectedLanguage: 'ja'
         });
         modelSession = session;
         modelStatus = 'available';
@@ -222,33 +223,51 @@ function flattenBookmarks(nodes) {
 
 // 调用Chrome内置AI
 async function callAI(userMessage) {
+  // 控制发送的收藏夹数量，避免输入过长
+  // 优先发送最近的收藏夹（最后添加的）
+  let selectedBookmarks;
+  const maxCount = 50;
+  if (allBookmarks.length > maxCount) {
+    // 取最新的收藏夹（最后面的）
+    selectedBookmarks = allBookmarks.slice(-maxCount);
+  } else {
+    selectedBookmarks = allBookmarks;
+  }
+
   // 构建收藏夹列表
-  const bookmarkList = allBookmarks.map((b, i) =>
+  const bookmarkList = selectedBookmarks.map((b, i) =>
     `[${i + 1}] ${b.title}: ${b.url}`
   ).join('\n');
 
+  const totalCount = allBookmarks.length;
   const prompt = `你是一个收藏夹助手。根据用户的需求，从以下收藏夹列表中推荐最相关的网页。
+（共${totalCount}个收藏夹，当前显示最近${selectedBookmarks.length}个）
 
 收藏夹列表：
 ${bookmarkList}
 
 用户需求：${userMessage}
 
-请根据用户的需求，推荐最合适的3-5个收藏夹。回复格式：
+请根据用户的需求，推荐最合适的收藏夹。回复格式：
 1. 先用一句话说明你推荐的理由
 2. 列出推荐的收藏夹，包含标题和URL（格式：[标题](URL)）
 3. 如果没有完全匹配的，可以推荐相关的
 4. 只返回推荐结果，不要其他内容。`;
 
-  // 如果模型不可用，使用本地匹配
-  if (modelStatus !== 'available') {
-    return getLocalResponse(userMessage);
+  // 明确检查并显示AI状态
+  let aiStatusText = '';
+  if (modelStatus === 'available') {
+    aiStatusText = '';
+  } else {
+    aiStatusText = '[使用本地匹配 - AI不可用]\n\n';
+    return aiStatusText + getLocalResponse(userMessage);
   }
 
   // 复用或创建会话
   if (!modelSession) {
     modelSession = await LanguageModel.create({
-      systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐Chrome收藏夹中的网页。回答要简洁，只列出推荐的收藏夹。'
+      systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐Chrome收藏夹中的网页。回答要简洁，只列出推荐的收藏夹。',
+      expectedLanguage: 'ja'
     });
   }
 
@@ -256,8 +275,40 @@ ${bookmarkList}
     const result = await modelSession.prompt(prompt);
     return result;
   } catch (error) {
-    console.error('AI调用失败:', error);
-    return getLocalResponse(userMessage);
+    const errorMsg = error.message || error;
+    console.log('AI调用失败，错误信息:', errorMsg);
+
+    // 输入过长时，减少数量重试
+    if (errorMsg.includes('input is too large') || errorMsg.includes('too long')) {
+      // 限制为更少的数量重试（取最新的20条）
+      const retryBookmarks = allBookmarks.slice(-20);
+      const retryList = retryBookmarks.map((b, i) =>
+        `[${i + 1}] ${b.title}: ${b.url}`
+      ).join('\n');
+
+      const retryPrompt = `你是一个收藏夹助手。根据用户的需求，从以下收藏夹列表中推荐最相关的网页。
+
+收藏夹列表：
+${retryList}
+
+用户需求：${userMessage}
+
+请根据用户的需求，推荐最合适的收藏夹。回复格式：
+1. 先用一句话说明你推荐的理由
+2. 列出推荐的收藏夹，包含标题和URL（格式：[标题](URL)）
+3. 如果没有完全匹配的，可以推荐相关的
+4. 只返回推荐结果，不要其他内容。`;
+
+      try {
+        const result = await modelSession.prompt(retryPrompt);
+        return result;
+      } catch (retryError) {
+        console.log('AI重试失败，错误信息:', retryError.message || retryError);
+      }
+    }
+
+    // 调用失败时也明确标识
+    return '[使用本地匹配 - AI调用失败]\n\n' + getLocalResponse(userMessage);
   }
 }
 
