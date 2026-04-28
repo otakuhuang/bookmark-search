@@ -221,94 +221,114 @@ function flattenBookmarks(nodes) {
   return result;
 }
 
-// 调用Chrome内置AI
+// 调用Chrome内置AI（分批处理模式）
 async function callAI(userMessage) {
-  // 控制发送的收藏夹数量，避免输入过长
-  // 优先发送最近的收藏夹（最后添加的）
-  let selectedBookmarks;
-  const maxCount = 50;
-  if (allBookmarks.length > maxCount) {
-    // 取最新的收藏夹（最后面的）
-    selectedBookmarks = allBookmarks.slice(-maxCount);
-  } else {
-    selectedBookmarks = allBookmarks;
-  }
-
-  // 构建收藏夹列表
-  const bookmarkList = selectedBookmarks.map((b, i) =>
-    `[${i + 1}] ${b.title}: ${b.url}`
-  ).join('\n');
-
-  const totalCount = allBookmarks.length;
-  const prompt = `你是一个收藏夹助手。根据用户的需求，从以下收藏夹列表中推荐最相关的网页。
-（共${totalCount}个收藏夹，当前显示最近${selectedBookmarks.length}个）
-
-收藏夹列表：
-${bookmarkList}
-
-用户需求：${userMessage}
-
-请根据用户的需求，推荐最合适的收藏夹。回复格式：
-1. 先用一句话说明你推荐的理由
-2. 列出推荐的收藏夹，包含标题和URL（格式：[标题](URL)）
-3. 如果没有完全匹配的，可以推荐相关的
-4. 只返回推荐结果，不要其他内容。`;
-
-  // 明确检查并显示AI状态
-  let aiStatusText = '';
-  if (modelStatus === 'available') {
-    aiStatusText = '';
-  } else {
-    aiStatusText = '[使用本地匹配 - AI不可用]\n\n';
-    return aiStatusText + getLocalResponse(userMessage);
-  }
-
-  // 复用或创建会话
+  // 初始化modelSession
   if (!modelSession) {
     modelSession = await LanguageModel.create({
-      systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐Chrome收藏夹中的网页。回答要简洁，只列出推荐的收藏夹。',
+      systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐Chrome收藏夹中的网页。',
       expectedLanguage: 'ja'
     });
   }
 
-  try {
-    const result = await modelSession.prompt(prompt);
-    return result;
-  } catch (error) {
-    const errorMsg = error.message || error;
-    console.log('AI调用失败，错误信息:', errorMsg);
+  // 分批处理配置
+  const BATCH_SIZE = 50; // 每批处理的收藏夹数量
+  const totalCount = allBookmarks.length;
+  const batchCount = Math.ceil(totalCount / BATCH_SIZE);
 
-    // 输入过长时，减少数量重试
-    if (errorMsg.includes('input is too large') || errorMsg.includes('too long')) {
-      // 限制为更少的数量重试（取最新的20条）
-      const retryBookmarks = allBookmarks.slice(-20);
-      const retryList = retryBookmarks.map((b, i) =>
-        `[${i + 1}] ${b.title}: ${b.url}`
-      ).join('\n');
+  // 第一阶段：分批询问AI筛选相关收藏夹
+  let relevantBookmarks = [];
 
-      const retryPrompt = `你是一个收藏夹助手。根据用户的需求，从以下收藏夹列表中推荐最相关的网页。
+  for (let i = 0; i < batchCount; i++) {
+    const start = i * BATCH_SIZE;
+    const end = Math.min(start + BATCH_SIZE, totalCount);
+    const batch = allBookmarks.slice(start, end);
+
+    const batchList = batch.map((b, idx) =>
+      `[${start + idx + 1}] ${b.title}: ${b.url}`
+    ).join('\n');
+
+    const batchPrompt = `你是一个收藏夹助手。用户需求：${userMessage}
+
+从以下收藏夹列表中，筛选出与用户需求相关的收藏夹。
+（共${totalCount}个收藏夹，这是第${i + 1}/${batchCount}批，编号${start + 1}-${end}）
 
 收藏夹列表：
-${retryList}
+${batchList}
 
-用户需求：${userMessage}
+请严格按照以下JSON格式回复，只返回JSON，不要其他内容：
+{"relevant": [{"index": 编号, "title": "标题", "url": "链接"}, ...]}`;
 
-请根据用户的需求，推荐最合适的收藏夹。回复格式：
-1. 先用一句话说明你推荐的理由
-2. 列出推荐的收藏夹，包含标题和URL（格式：[标题](URL)）
-3. 如果没有完全匹配的，可以推荐相关的
-4. 只返回推荐结果，不要其他内容。`;
-
-      try {
-        const result = await modelSession.prompt(retryPrompt);
-        return result;
-      } catch (retryError) {
-        console.log('AI重试失败，错误信息:', retryError.message || retryError);
+    try {
+      const batchResult = await modelSession.prompt(batchPrompt);
+      // 解析AI返回的JSON
+      const parsed = parseAIResponse(batchResult);
+      if (parsed && parsed.relevant) {
+        relevantBookmarks.push(...parsed.relevant);
       }
+    } catch (error) {
+      console.log(`第${i + 1}批处理失败，继续下一批:`, error.message);
     }
 
-    // 调用失败时也明确标识
-    return '[使用本地匹配 - AI调用失败]\n\n' + getLocalResponse(userMessage);
+    // 更新加载提示
+    updateLoadingTip(`AI分析中... (${i + 1}/${batchCount})`);
+  }
+
+  // 第二阶段：如果没有找到相关收藏夹
+  if (relevantBookmarks.length === 0) {
+    return `抱歉，没有找到与「${userMessage}」相关的收藏夹。可以试试其他关键词，如「教程」「视频」「文档」等。`;
+  }
+
+  // 第三阶段：从所有相关收藏夹中选择最佳推荐
+  const allRelevantList = relevantBookmarks.map((b, i) =>
+    `[${i + 1}] ${b.title}: ${b.url}`
+  ).join('\n');
+
+  const finalPrompt = `你是一个收藏夹助手。用户需求：${userMessage}
+
+从以下与需求相关的收藏夹中，选择最合适的3-5个进行推荐。
+
+相关收藏夹列表：
+${allRelevantList}
+
+请回复：
+1. 先用一句话说明你推荐的理由
+2. 列出推荐的收藏夹（格式：[标题](URL)）
+3. 只返回推荐结果，不要其他内容。`;
+
+  try {
+    const finalResult = await modelSession.prompt(finalPrompt);
+    return finalResult;
+  } catch (error) {
+    // 如果最终总结失败，直接返回相关列表
+    return `找到${relevantBookmarks.length}个相关收藏夹：\n\n` +
+      relevantBookmarks.slice(0, 5).map((b, i) =>
+        `${i + 1}. [${b.title}](${b.url})`
+      ).join('\n');
+  }
+}
+
+// 解析AI返回的JSON响应
+function parseAIResponse(response) {
+  try {
+    // 尝试提取JSON部分
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+  } catch (error) {
+    console.log(response)
+    console.log('JSON解析失败，尝试其他方式', error.message);
+  }
+  return null;
+}
+
+// 更新加载提示
+function updateLoadingTip(text) {
+  const loadingMsg = document.getElementById('loadingMessage');
+  if (loadingMsg) {
+    const tip = loadingMsg.querySelector('.loading-tip');
+    if (tip) tip.textContent = text;
   }
 }
 
@@ -382,7 +402,7 @@ function setLoading(loading) {
     loadingDiv.innerHTML = `
       <div class="loading">
         <div class="loading-dots"><span></span><span></span><span></span></div>
-        AI思考中...
+        <span class="loading-tip">AI分析中...</span>
       </div>
     `;
     chatContainer.appendChild(loadingDiv);
