@@ -185,9 +185,8 @@ async function handleSend() {
 function formatResults(query, results) {
   let response = `根据「${query}」，找到 ${results.length} 个相关收藏夹：\n\n`;
 
-  results.forEach((r, i) => {
-    const score = Math.round(r.score * 100);
-    response += `${i + 1}. [${r.title}](${r.url}) (${score}%)\n`;
+  results.forEach((r) => {
+    response += `[${r.title}](${r.url})\n`;
   });
 
   return response;
