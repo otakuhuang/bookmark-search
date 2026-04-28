@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>收藏夹AI助手</title>
+  <title>收藏夹搜索</title>
   <style>
     * {
       margin: 0;
@@ -282,7 +282,7 @@
         <path d="M12 6a6 6 0 0 0-6 6 6 6 0 0 0 6 6 6 6 0 0 0 6-6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z" />
       </svg>
     </div>
-    <div class="header-title">收藏夹AI助手</div>
+    <div class="header-title">收藏夹搜索</div>
     <div class="model-status" id="modelStatus">
       <span class="model-status-text" id="modelStatusText">检查中...</span>
       <button class="download-btn" id="downloadBtn" style="display: none;"></button>
@@ -291,8 +291,8 @@
 
   <div class="chat-container" id="chatContainer">
     <div class="welcome-message">
-      <div class="welcome-title">你好，我是收藏夹AI助手</div>
-      <div class="welcome-desc">描述你想要的内容或需求，<br>我会分析你的收藏夹并推荐合适的页面</div>
+      <div class="welcome-title">收藏夹搜索</div>
+      <div class="welcome-desc">输入关键词搜索收藏夹，<br>基于语义相似度返回最相关的结果</div>
     </div>
   </div>
 
@@ -301,7 +301,7 @@
     <button id="sendBtn">发送</button>
   </div>
 
-  <script src="popup.js"></script>
+  <script type="module" src="./main.js"></script>
 </body>
 
 </html>
