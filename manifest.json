@@ -1,0 +1,28 @@
+{
+  "name": "收藏夹AI助手",
+  "description": "通过AI对话分析收藏夹, 推荐合适的页面",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "permissions": [
+    "bookmarks"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
