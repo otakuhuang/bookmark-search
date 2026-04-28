@@ -1,52 +1,66 @@
-# 收藏夹AI助手
+# Bookmark Search
 
-通过Chrome内置AI分析收藏夹，推荐合适的页面。
+通过本地 AI 分析收藏夹，使用向量相似度搜索推荐合适的页面。
 
 ## 项目结构
 
 ```
 bookmark-search/
-├── manifest.json    # 扩展配置
-├── popup/         # 对话界面
-│   ├── popup.html
-│   └── popup.js
-├── background.js  # 后台脚本
-└── images/        # 图标
+├── manifest.json           # Chrome 扩展配置
+├── package.json            # 依赖管理
+├── vite.config.js          # Vite 构建配置
+├── public/                 # 静态资源
+├── images/                 # 图标
+└── src/
+    ├── background/         # 后台服务脚本
+    │   └── index.js
+    ├── popup/              # 弹窗界面
+    │   ├── index.html
+    │   └── main.js
+    ├── utils/              # 工具函数
+    │   ├── cosine.js       # 余弦相似度计算
+    │   ├── indexdb.js      # IndexedDB 操作
+    │   ├── queue.js        # 队列管理
+    │   ├── workerClient.js # Worker 客户端
+    │   └── writeQueue.js   # 写入队列
+    └── worker/             # Web Worker
+        └── embedding.worker.js
 ```
+
+## 技术栈
+
+- **构建工具**: Vite + @crxjs/vite-plugin
+- **AI 模型**: @xenova/transformers (sentence-transformers/all-MiniLM-L6-v2)
+- **存储**: IndexedDB (向量数据库)
+- **向量计算**: Web Worker + 余弦相似度
 
 ## 安装
 
-1. 打开 `chrome://extensions/`
-2. 开启「开发者模式」
-3. 点击「加载已解压的扩展程序」
-4. 选择项目文件夹
+1. 克隆项目
+2. 安装依赖: `bun install` 或 `npm install`
+3. 构建: `bun run build` 或 `npm run build`
+4. 打开 `chrome://extensions/`
+5. 开启「开发者模式」
+6. 点击「加载已解压的扩展程序」
+7. 选择 `dist` 文件夹
 
-## 使用Chrome内置AI
+## 开发
 
-本插件使用Chrome内置的Prompt API (Gemini Nano)，需要满足以下条件：
+```bash
+bun run dev    # 开发模式
+bun run build  # 生产构建
+```
 
-- Chrome版本 >= 140
-- 磁盘空间 >= 22GB
-- 内存 >= 16GB
-- Windows 10+/macOS 13+/Linux/Chromebook Plus
+## 工作原理
 
-首次使用时模型会自动下载。
+1. **索引构建**: 首次使用时，自动为所有收藏夹标题生成向量嵌入并存入 IndexedDB
+2. **搜索**: 用户输入查询后，将查询文本转为向量
+3. **相似度匹配**: 使用余弦相似度计算查询向量与所有书签向量的相似度
+4. **结果返回**: 按相似度排序返回 Top 5 最相关的结果
 
 ## 硬件要求
 
-详细的硬件要求请参阅 [Chrome AI文档](https://developer.chrome.com/docs/ai/get-started?hl=zh-cn)。
+- 内存 >= 8GB (推荐 16GB)
+- 磁盘空间 >= 2GB (模型文件)
 
-## 使用
-
-1. 点击插件图标打开对话框
-2. 描述你想要的内容或需求
-3. AI会分析你的收藏夹并推荐合适的页面
-
-## 故障排除
-
-如果AI不可用：
-
-1. 检查Chrome版本是否 >= 140
-2. 确保磁盘空间足够
-3. 尝试在地址栏输入 `chrome://on-device-internals` 查看模型状态
-4. 如果模型显示"available"但仍无法使用，可能需要开启实验标志
+首次使用时 AI 模型会自动下载。
