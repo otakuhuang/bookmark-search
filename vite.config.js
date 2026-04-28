@@ -11,5 +11,12 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    base: './',
+    rollupOptions: {
+      input: {
+        popup: './src/popup/index.html',
+        loading: './src/popup/loading.html',
+      },
+    },
   },
 });

@@ -1,23 +1,30 @@
 // 收藏夹搜索 - 基于向量相似度
 
-import { getAllEmbeddings, getByUrl, saveEmbedding } from '../utils/indexdb.js';
+import { getAllEmbeddings } from '../utils/indexdb.js';
 import { cosine } from '../utils/cosine.js';
 import { embed, waitForReady } from '../utils/workerClient.js';
 
 let ready = false;
 
-// 初始化 worker
-waitForReady().then(() => {
-  ready = true;
-  updateModelStatus('ready');
-  // 自动检查并构建索引
-  buildIndexIfNeeded();
-});
-
 // 初始化
-document.addEventListener('DOMContentLoaded', () => {
+async function init() {
+  // 检查是否需要构建索引
+  const existing = await getAllEmbeddings();
+  if (existing.length === 0) {
+    window.location.href = 'loading.html';
+    return;
+  }
+
+  // 初始化 worker
+  waitForReady().then(() => {
+    ready = true;
+    updateModelStatus('ready');
+  });
+
   setupEventListeners();
-});
+}
+
+document.addEventListener('DOMContentLoaded', init);
 
 // 设置事件监听
 function setupEventListeners() {
@@ -198,65 +205,3 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// 获取所有书签
-async function getBookmarks() {
-  return new Promise((resolve) => {
-    chrome.bookmarks.getTree((tree) => {
-      const result = [];
-
-      function walk(nodes) {
-        for (const n of nodes) {
-          if (n.url) {
-            result.push(n);
-          }
-          if (n.children) walk(n.children);
-        }
-      }
-
-      walk(tree);
-      resolve(result);
-    });
-  });
-}
-
-// 检查并构建索引（如果需要时）
-async function buildIndexIfNeeded() {
-  const bookmarks = await getBookmarks();
-  const existing = await getAllEmbeddings();
-  const existingUrls = new Set(existing.map(e => e.url));
-
-  // 找出需要建立索引的书签
-  const toProcess = bookmarks.filter(b => !existingUrls.has(b.url));
-
-  if (toProcess.length === 0) {
-    console.log('索引已是最新');
-    return;
-  }
-
-  console.log(`开始为 ${toProcess.length} 个书签建立索引...`);
-  updateModelStatus('loading');
-
-  // 批量处理
-  const BATCH_SIZE = 5;
-  for (let i = 0; i < toProcess.length; i += BATCH_SIZE) {
-    const batch = toProcess.slice(i, i + BATCH_SIZE);
-
-    await Promise.all(
-      batch.map(async (bookmark) => {
-        try {
-          const embedding = await embed(bookmark.title);
-          await saveEmbedding({
-            url: bookmark.url,
-            title: bookmark.title,
-            embedding
-          });
-        } catch (err) {
-          console.error('处理书签失败:', bookmark.title, err);
-        }
-      })
-    );
-  }
-
-  console.log(`索引构建完成: ${toProcess.length} 个书签`);
-  updateModelStatus('ready');
-}
