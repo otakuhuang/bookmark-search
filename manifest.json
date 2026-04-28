@@ -7,6 +7,11 @@
     "bookmarks",
     "storage"
   ],
+  "sandbox": {
+    "pages": [
+      "src/sandbox/sandbox.html"
+    ]
+  },
   "background": {
     "service_worker": "src/background/index.js",
     "type": "module"
@@ -14,8 +19,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "models/*",
-        "src/worker/embedding.worker.js"
+        "models/**",
+        "assets/worker.js",
+        "src/popup/settings.html"
       ],
       "matches": [
         "<all_urls>"

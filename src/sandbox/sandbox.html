@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Embedding Sandbox</title>
+</head>
+<body>
+<script>
+// sandbox.html - 在 sandbox iframe 中运行，不受扩展 CSP 限制
+// 直接在 sandbox 内执行 embedding 逻辑（不使用 Web Worker）
+// sandbox 可以执行 WASM，也允许 eval
+
+// 从 href 提取扩展 base URL（因为 location.origin 是 null）
+// 格式: chrome-extension://[id]/src/sandbox/sandbox.html
+// 正确提取: chrome-extension://[id]/
+const href = location.href;
+// 找到协议://后的位置
+const protoEnd = href.indexOf('://') + 3;
+// 找到下一个 / 的位置（即路径开始）
+const pathStart = href.indexOf('/', protoEnd);
+// 提取 base URL
+const extensionBase = href.substring(0, pathStart);
+// 正确的 worker URL
+const workerUrl = extensionBase + '/assets/worker.js';
+
+console.log('[Sandbox] Loading embedding script from:', workerUrl);
+
+async function init() {
+    try {
+        // fetch 打包后的 worker 脚本
+        const response = await fetch(workerUrl);
+        const code = await response.text();
+
+        // 在 sandbox 内执行（sandbox 允许 eval）
+        eval(code);
+
+        console.log('[Sandbox] Embedding script loaded');
+
+        // 通知父页面 sandbox 已就绪
+        window.parent.postMessage({ type: 'sandbox-ready' }, '*');
+    } catch (err) {
+        console.error('[Sandbox] Failed to load embedding script:', err);
+        window.parent.postMessage({ type: 'error', error: err.message }, '*');
+    }
+}
+
+init();
+</script>
+</body>
+</html>

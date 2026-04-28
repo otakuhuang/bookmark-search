@@ -16,10 +16,17 @@ async function init() {
   }
 
   // 初始化 worker
-  waitForReady().then(() => {
-    ready = true;
-    updateModelStatus('ready');
-  });
+  console.log('[Popup] Calling waitForReady...');
+  waitForReady()
+    .then(() => {
+      console.log('[Popup] waitForReady resolved');
+      ready = true;
+      updateModelStatus('ready');
+    })
+    .catch((err) => {
+      console.error('[Popup] waitForReady error:', err);
+      updateModelStatus('error');
+    });
 
   setupEventListeners();
 }
@@ -30,6 +37,7 @@ document.addEventListener('DOMContentLoaded', init);
 function setupEventListeners() {
   const userInput = document.getElementById('userInput');
   const sendBtn = document.getElementById('sendBtn');
+  const settingsBtn = document.getElementById('settingsBtn');
 
   sendBtn.addEventListener('click', handleSend);
 
@@ -37,6 +45,10 @@ function setupEventListeners() {
     if (e.key === 'Enter' && !isLoading) {
       handleSend();
     }
+  });
+
+  settingsBtn.addEventListener('click', () => {
+    window.location.href = 'settings.html';
   });
 }
 
