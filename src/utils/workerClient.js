@@ -71,9 +71,9 @@ export async function initSandboxForSettings() {
     });
     console.log('[WorkerClient] Sandbox iframe ready');
 
-    // 发送初始化消息
+    // 发送初始化消息 - 使用多语言模型支持中文
     const modelsDir = chrome.runtime.getURL('models/');
-    postToSandbox({ type: 'init', modelPath: '../models/all-MiniLM-L6-v2', modelsDir });
+    postToSandbox({ type: 'init', modelPath: '../models/paraphrase-multilingual-MiniLM-L12-v2', modelsDir });
 
     // 等待模型加载完成
     await new Promise((resolve) => {
@@ -196,7 +196,8 @@ export async function waitForReady() {
     // 在扩展页面中计算完整的 modelsDir URL（sandbox 中无法用 new URL 解析 chrome-extension:// 协议）
     const modelsDir = chrome.runtime.getURL('models/');
     console.log('[WorkerClient] modelsDir:', modelsDir);
-    postToSandbox({ type: 'init', modelPath: '../models/all-MiniLM-L6-v2', modelsDir });
+    // 使用多语言模型支持中文
+    postToSandbox({ type: 'init', modelPath: '../models/paraphrase-multilingual-MiniLM-L12-v2', modelsDir });
 
     return new Promise((resolve) => {
         pending.set('__init__', resolve);

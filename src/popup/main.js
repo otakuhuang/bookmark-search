@@ -94,15 +94,60 @@ async function search(query) {
     return [];
   }
 
-  const res = all
-    .map(x => ({
-      ...x,
-      score: cosine(qEmb, x.embedding)
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+  // 混合搜索：向量相似度 + 关键词匹配
+  const results = all
+    .map(x => {
+      // 1. 向量相似度分数 (0-1)
+      const vectorScore = cosine(qEmb, x.embedding);
+      
+      // 2. 关键词匹配分数 (0-1)
+      const keywordScore = keywordMatch(query, x.title, x.url);
+      
+      // 3. 混合打分（向量70% + 关键词30%）
+      const finalScore = vectorScore * 0.7 + keywordScore * 0.3;
+      
+      return {
+        ...x,
+        score: finalScore,
+        vectorScore,
+        keywordScore
+      };
+    })
+    .filter(x => x.score > 0.1)  // 提高阈值，过滤低质量结果
+    .sort((a, b) => b.score - a.score);
 
-  return res;
+  return results;
+}
+
+// 关键词匹配算法
+function keywordMatch(query, title, url) {
+  if (!query || !title) return 0;
+  
+  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+  const text = `${title} ${url}`.toLowerCase();
+  
+  // 精确匹配评分
+  let exactMatch = 0;
+  for (const word of queryWords) {
+    if (text.includes(word)) {
+      exactMatch++;
+    }
+  }
+  
+  // 计算精确匹配率
+  const exactScore = queryWords.length > 0 ? exactMatch / queryWords.length : 0;
+  
+  // 计算标题匹配加成（标题匹配比URL匹配更重要）
+  let titleMatch = 0;
+  for (const word of queryWords) {
+    if (title.toLowerCase().includes(word)) {
+      titleMatch++;
+    }
+  }
+  const titleBonus = titleMatch / queryWords.length * 0.5;
+  
+  // 最终分数 = 精确匹配 * 0.7 + 标题加成 * 0.3
+  return Math.min(1, exactScore * 0.7 + titleBonus * 0.3);
 }
 
 // 发送消息

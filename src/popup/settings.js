@@ -141,7 +141,9 @@ async function rebuildDatabase() {
       await Promise.all(
         batch.map(async (bookmark) => {
           try {
-            const embedding = await embed(bookmark.title);
+            // 结合标题和URL进行向量化，提升中文搜索效果
+            const textToEmbed = `${bookmark.title} ${bookmark.url}`;
+            const embedding = await embed(textToEmbed);
             await saveEmbedding({
               url: bookmark.url,
               title: bookmark.title,
