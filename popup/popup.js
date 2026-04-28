@@ -9,63 +9,138 @@ let modelStatus = 'checking';
 document.addEventListener('DOMContentLoaded', async () => {
   await checkModelAvailability();
   setupEventListeners();
+  setupDownloadButton();
 });
 
 // 检查模型可用性
 async function checkModelAvailability() {
-  const statusEl = document.getElementById('modelStatus');
+  const statusText = document.getElementById('modelStatusText');
+  const downloadBtn = document.getElementById('downloadBtn');
+
+  // 默认显示检查中
+  statusText.textContent = '检查中...';
+
+  // 添加点击事件显示详情
+  statusText.style.cursor = 'pointer';
+  statusText.title = '点击查看详情';
+  statusText.onclick = async () => {
+    await showModelDetails();
+  };
 
   try {
-    // 检查Prompt API是否可用
-    const availability = await languageModel.availability();
+    if (typeof LanguageModel === 'undefined') {
+      throw new Error('API不存在');
+    }
+    const availability = await LanguageModel.availability();
+    console.log('AI availability:', availability);
 
-    switch (availability) {
-      case 'available':
-        modelStatus = 'available';
-        statusEl.textContent = 'AI就绪';
-        statusEl.className = 'status-available';
-        break;
-      case 'downloadable':
-        modelStatus = 'downloadable';
-        statusEl.textContent = '正在下载模型...';
-        statusEl.className = 'status-downloading';
-        // 自动触发下载
-        await downloadModel();
-        break;
-      case 'downloading':
-        modelStatus = 'downloading';
-        statusEl.textContent = '下载中...';
-        statusEl.className = 'status-downloading';
-        break;
-      default:
-        modelStatus = 'unavailable';
-        statusEl.textContent = 'AI不可用';
-        statusEl.className = 'status-unavailable';
-        showError('你的设备不支持Chrome内置AI，请确保：\n1. Chrome版本 >= 140\n2. 磁盘空间 >= 22GB\n3. 内存 >= 16GB');
+    if (availability === 'available') {
+      modelStatus = 'available';
+      statusText.textContent = 'AI就绪';
+      statusText.className = 'status-available';
+      downloadBtn.style.display = 'none';
+    } else if (availability === 'downloadable') {
+      modelStatus = 'downloadable';
+      statusText.textContent = '可下载';
+      statusText.className = 'status-downloading';
+      downloadBtn.textContent = '下载AI模型';
+      downloadBtn.className = 'download-btn btn-download';
+      downloadBtn.style.display = 'block';
+    } else if (availability === 'downloading') {
+      modelStatus = 'downloading';
+      statusText.textContent = '下载中...';
+      statusText.className = 'status-downloading';
+      downloadBtn.style.display = 'none';
+      await waitForDownload();
+    } else {
+      setUnavailable('此设备不支持Chrome内置AI', statusText, downloadBtn);
     }
   } catch (error) {
-    modelStatus = 'unavailable';
-    statusEl.textContent = 'API不可用';
-    statusEl.className = 'status-unavailable';
+    console.error('AI检查失败:', error);
+    setUnavailable('API不可用，请查看要求', statusText, downloadBtn);
   }
 }
 
-// 下载模型
-async function downloadModel() {
-  try {
-    const session = await languageModel.create({
-      systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐收藏夹。'
-    });
-    modelSession = session;
-    modelStatus = 'available';
+// 显示模型详情
+async function showModelDetails() {
+  let details = 'AI状态详情：\n\n';
 
-    const statusEl = document.getElementById('modelStatus');
-    statusEl.textContent = 'AI就绪';
-    statusEl.className = 'status-available';
+  try {
+    if (typeof LanguageModel === 'undefined') {
+      details += '❌ LanguageModel API 不存在\n';
+      details += '请使用 Chrome 140+ 版本';
+    } else {
+      const availability = await LanguageModel.availability();
+      details += `当前状态：${availability}\n`;
+
+      switch (availability) {
+        case 'available':
+          details += '✓ AI模型已就绪，可以直接使用';
+          break;
+        case 'downloadable':
+          details += '○ AI模型可下载，点击"下载AI模型"按钮开始下载';
+          break;
+        case 'downloading':
+          details += '下载中...请稍候';
+          break;
+        case 'unavailable':
+          details += '✗ 此设备不支持Chrome内置AI';
+          break;
+      }
+    }
   } catch (error) {
-    console.error('模型下载失败:', error);
-    modelStatus = 'unavailable';
+    details += `检查出错：${error.message}`;
   }
+
+  details += '\n\n硬件要求：';
+  details += '\n- Chrome 140+';
+  details += '\n- 磁盘空间 >= 22GB';
+  details += '\n- 内存 >= 16GB';
+  details += '\n- Windows 10+/macOS 13+/Linux';
+
+  appendMessage(details, 'ai');
+}
+
+function setUnavailable(msg, statusText, downloadBtn) {
+  modelStatus = 'unavailable';
+  statusText.textContent = msg;
+  statusText.className = 'status-unavailable';
+  downloadBtn.textContent = '查看要求';
+  downloadBtn.className = 'download-btn btn-view';
+  downloadBtn.onclick = () => window.open('https://developer.chrome.com/docs/ai/get-started?hl=zh-cn', '_blank');
+  downloadBtn.style.display = 'block';
+  if (msg !== 'API不可用，请查看要求') {
+    showError('你的设备不支持Chrome内置AI。\n\n需要满足：\n1. Chrome版本 >= 140\n2. 磁盘空间 >= 22GB\n3. 内存 >= 16GB');
+  }
+}
+
+// 等待下载完成
+async function waitForDownload() {
+  let availability = await LanguageModel.availability();
+  while (availability === 'downloading') {
+    await new Promise(r => setTimeout(r, 1000));
+    availability = await LanguageModel.availability();
+  }
+  await checkModelAvailability();
+}
+
+// 下载模型
+function setupDownloadButton() {
+  const downloadBtn = document.getElementById('downloadBtn');
+  downloadBtn.addEventListener('click', async () => {
+    if (modelStatus === 'downloadable') {
+      try {
+        const session = await LanguageModel.create({
+          systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐收藏夹。'
+        });
+        modelSession = session;
+        modelStatus = 'available';
+        await checkModelAvailability();
+      } catch (error) {
+        console.error('模型下载失败:', error);
+      }
+    }
+  });
 }
 
 // 设置事件监听
@@ -172,7 +247,7 @@ ${bookmarkList}
 
   // 复用或创建会话
   if (!modelSession) {
-    modelSession = await languageModel.create({
+    modelSession = await LanguageModel.create({
       systemPrompt: '你是一个收藏夹助手，负责根据用户需求推荐Chrome收藏夹中的网页。回答要简洁，只列出推荐的收藏夹。'
     });
   }

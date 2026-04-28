@@ -53,10 +53,45 @@
     }
 
     .model-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       margin-left: auto;
       font-size: 12px;
+    }
+
+    .model-status-text {
       padding: 4px 8px;
       border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .model-status-text:hover {
+      filter: brightness(0.95);
+    }
+
+    .download-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .download-btn:hover {
+      opacity: 0.8;
+    }
+
+    .btn-download {
+      background: #667eea;
+      color: #fff;
+    }
+
+    .btn-view {
+      background: #e0e0e0;
+      color: #333;
     }
 
     .status-available {
@@ -248,7 +283,10 @@
       </svg>
     </div>
     <div class="header-title">收藏夹AI助手</div>
-    <div class="model-status" id="modelStatus">检查中...</div>
+    <div class="model-status" id="modelStatus">
+      <span class="model-status-text" id="modelStatusText">检查中...</span>
+      <button class="download-btn" id="downloadBtn" style="display: none;"></button>
+    </div>
   </div>
 
   <div class="chat-container" id="chatContainer">
