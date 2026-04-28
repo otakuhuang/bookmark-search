@@ -5,6 +5,7 @@ import { cosine } from '../utils/cosine.js';
 import { embed, waitForReady } from '../utils/workerClient.js';
 
 let ready = false;
+let resultLimit = 20;
 
 // 初始化
 async function init() {
@@ -14,6 +15,10 @@ async function init() {
     window.location.href = 'loading.html';
     return;
   }
+
+  // 加载设置
+  const settings = await chrome.storage.sync.get(['resultLimit']);
+  resultLimit = settings.resultLimit ?? 20;
 
   // 初始化 worker
   console.log('[Popup] Calling waitForReady...');
@@ -166,12 +171,15 @@ async function handleSend() {
   setLoading(true);
 
   try {
-    const results = await search(message);
+    const allResults = await search(message);
 
-    if (results.length === 0) {
+    if (allResults.length === 0) {
       appendMessage(`抱歉，没有找到与「${message}」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词`, 'ai');
     } else {
-      const response = formatResults(message, results);
+      const totalCount = allResults.length;
+      // 应用结果限制
+      const displayResults = resultLimit > 0 ? allResults.slice(0, resultLimit) : allResults;
+      const response = formatResults(message, displayResults, totalCount);
       appendMessage(response, 'ai');
     }
   } catch (error) {
@@ -182,8 +190,8 @@ async function handleSend() {
 }
 
 // 格式化搜索结果
-function formatResults(query, results) {
-  let response = `根据「${query}」，找到 ${results.length} 个相关收藏夹：\n\n`;
+function formatResults(query, results, totalCount) {
+  let response = `根据「${query}」，找到 ${totalCount} 个相关收藏夹：\n\n`;
 
   results.forEach((r) => {
     response += `[${r.title}](${r.url})\n`;

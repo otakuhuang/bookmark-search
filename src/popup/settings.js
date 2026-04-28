@@ -6,17 +6,33 @@ import { embed, setProgressCallback, setErrorCallback, initSandboxForSettings } 
 let isRebuilding = false;
 
 // 初始化
-function init() {
+async function init() {
+  await loadSettings();
   setupEventListeners();
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// 加载设置
+async function loadSettings() {
+  const result = await chrome.storage.sync.get(['resultLimit']);
+  const limit = result.resultLimit ?? 20;
+  document.getElementById('resultLimit').value = limit;
+}
+
+// 保存设置
+async function saveSettings() {
+  const limit = parseInt(document.getElementById('resultLimit').value) || 20;
+  await chrome.storage.sync.set({ resultLimit: limit });
+}
 
 // 设置事件监听
 function setupEventListeners() {
   document.getElementById('backBtn').addEventListener('click', () => {
     window.location.href = 'index.html';
   });
+
+  document.getElementById('resultLimit').addEventListener('change', saveSettings);
 
   document.getElementById('rebuildBtn').addEventListener('click', async () => {
     try {
