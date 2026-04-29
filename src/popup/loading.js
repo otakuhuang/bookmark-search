@@ -21,7 +21,7 @@ function updateProgress(status, percent) {
 
 // 显示错误
 function showError(message) {
-  loadingTitle.textContent = '初始化失败';
+  loadingTitle.textContent = chrome.i18n.getMessage('initFailed') || 'Initialization Failed';
   loadingDesc.textContent = '';
   progressFill.style.background = '#c62828';
   progressDetail.style.color = '#c62828';
@@ -36,16 +36,16 @@ function goToMain() {
 // 构建索引
 async function buildIndex() {
   if (isRebuildMode) {
-    loadingTitle.textContent = '正在重建索引';
-    loadingDesc.textContent = '正在为收藏夹生成向量嵌入';
+    loadingTitle.textContent = chrome.i18n.getMessage('rebuildingIndex') || 'Rebuilding Index';
+    loadingDesc.textContent = chrome.i18n.getMessage('rebuildingIndexDesc') || 'Generating vector embeddings for bookmarks';
   } else {
-    loadingTitle.textContent = '正在构建索引';
-    loadingDesc.textContent = '首次使用时，需要为收藏夹生成向量嵌入';
+    loadingTitle.textContent = chrome.i18n.getMessage('buildingIndex') || 'Building Index';
+    loadingDesc.textContent = chrome.i18n.getMessage('buildingIndexDesc') || 'Generating vector embeddings for bookmarks on first use';
   }
 
   // 设置超时（5分钟）
   const timeout = setTimeout(() => {
-    showError('初始化超时，请检查网络连接');
+    showError(chrome.i18n.getMessage('initTimeout') || 'Initialization timeout. Please check your network connection.');
   }, 5 * 60 * 1000);
 
   try {
@@ -54,15 +54,17 @@ async function buildIndex() {
     });
   } catch (err) {
     clearTimeout(timeout);
-    showError(`初始化失败: ${err.message}`);
+    showError(`Initialization failed: ${err.message}`);
     return;
   }
 
   clearTimeout(timeout);
 
   // 完成
-  loadingTitle.textContent = isRebuildMode ? '重建完成' : '初始化完成';
-  loadingDesc.textContent = '即将进入搜索页面...';
+  loadingTitle.textContent = isRebuildMode 
+    ? (chrome.i18n.getMessage('rebuildComplete') || 'Rebuild Complete')
+    : (chrome.i18n.getMessage('initComplete') || 'Initialization Complete');
+  loadingDesc.textContent = chrome.i18n.getMessage('redirecting') || 'Redirecting to search page...';
 
   setTimeout(goToMain, 1000);
 }

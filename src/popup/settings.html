@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>设置</title>
+  <title data-i18n="settings">Settings</title>
   <link rel="stylesheet" href="./settings.css">
 </head>
 
@@ -15,45 +15,45 @@
         <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
     </button>
-    <div class="header-title">设置</div>
+    <div class="header-title" data-i18n="settings">设置</div>
   </div>
 
   <div class="content">
     <div class="section">
-      <div class="section-title">搜索设置</div>
+      <div class="section-title" data-i18n="searchSettings">搜索设置</div>
       <div class="setting-row">
         <div>
-          <div class="setting-label">显示条数</div>
-          <div class="setting-desc">0 为不限制</div>
+          <div class="setting-label" data-i18n="resultLimit">显示条数</div>
+          <div class="setting-desc" data-i18n="resultLimitDesc">0 为不限制</div>
         </div>
         <input type="number" class="setting-input" id="resultLimit" min="0" placeholder="20">
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">向量数据库</div>
-      <div class="section-desc">
+      <div class="section-title" data-i18n="vectorDb">向量数据库</div>
+      <div class="section-desc" data-i18n="vectorDbDesc">
         收藏夹中的每个书签都会生成向量嵌入，用于语义搜索。重建数据将清空现有索引并重新生成。
       </div>
-      <button class="rebuild-btn" id="rebuildBtn">重建数据</button>
+      <button class="rebuild-btn" id="rebuildBtn" data-i18n="rebuildData">重建数据</button>
       <div class="progress-container" id="progressContainer">
         <div class="progress-bar">
           <div class="progress-fill" id="progressFill"></div>
         </div>
-        <div class="progress-text" id="progressText">准备中...</div>
+        <div class="progress-text" id="progressText" data-i18n="preparing">准备中...</div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">会话管理</div>
-      <div class="section-desc">
+      <div class="section-title" data-i18n="sessionManagement">会话管理</div>
+      <div class="section-desc" data-i18n="sessionDesc">
         清空搜索会话历史记录。
       </div>
-      <button class="clear-btn" id="clearBtn">清除会话</button>
+      <button class="clear-btn" id="clearBtn" data-i18n="clearSession">清除会话</button>
     </div>
   </div>
 
-  <div class="version">Bookmark Search v0.0.0</div>
+  <div class="version">SemaBookmark v0.0.0</div>
 
   <script type="module" src="./settings.js"></script>
 </body>

@@ -1,0 +1,158 @@
+{
+  "extensionName": {
+    "message": "SemaBookmark",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "Semantic bookmark search, find relevant pages based on similarity",
+    "description": "Extension description"
+  },
+  "settings": {
+    "message": "Settings",
+    "description": "Settings button tooltip"
+  },
+  "welcomeTitle": {
+    "message": "Bookmark Search",
+    "description": "Welcome page title"
+  },
+  "welcomeDesc": {
+    "message": "Enter keywords to search bookmarks,<br>returns most relevant results based on semantic similarity",
+    "description": "Welcome page description"
+  },
+  "inputPlaceholder": {
+    "message": "Enter keywords...",
+    "description": "Search input placeholder"
+  },
+  "search": {
+    "message": "Search",
+    "description": "Search button text"
+  },
+  "searching": {
+    "message": "Searching...",
+    "description": "Searching indicator"
+  },
+  "searchSettings": {
+    "message": "Search Settings",
+    "description": "Settings section title"
+  },
+  "resultLimit": {
+    "message": "Result Limit",
+    "description": "Result limit setting label"
+  },
+  "resultLimitDesc": {
+    "message": "0 means no limit",
+    "description": "Result limit description"
+  },
+  "vectorDb": {
+    "message": "Vector Database",
+    "description": "Vector database section title"
+  },
+  "vectorDbDesc": {
+    "message": "Each bookmark generates a vector embedding for semantic search. Rebuilding will clear existing index and regenerate.",
+    "description": "Vector database description"
+  },
+  "rebuildData": {
+    "message": "Rebuild Data",
+    "description": "Rebuild data button text"
+  },
+  "preparing": {
+    "message": "Preparing...",
+    "description": "Preparing status text"
+  },
+  "sessionManagement": {
+    "message": "Session Management",
+    "description": "Session management section title"
+  },
+  "sessionDesc": {
+    "message": "Clear search session history.",
+    "description": "Session management description"
+  },
+  "clearSession": {
+    "message": "Clear Session",
+    "description": "Clear session button text"
+  },
+  "clearing": {
+    "message": "Clearing...",
+    "description": "Clearing status text"
+  },
+  "cleared": {
+    "message": "Cleared",
+    "description": "Cleared status text"
+  },
+  "initializing": {
+    "message": "Initializing...",
+    "description": "Initializing status"
+  },
+  "preparing": {
+    "message": "Preparing",
+    "description": "Preparing status"
+  },
+  "buildingIndex": {
+    "message": "Building Index",
+    "description": "Building index status"
+  },
+  "buildingIndexDesc": {
+    "message": "Generating vector embeddings for bookmarks on first use",
+    "description": "Building index description"
+  },
+  "rebuildingIndex": {
+    "message": "Rebuilding Index",
+    "description": "Rebuilding index status"
+  },
+  "rebuildingIndexDesc": {
+    "message": "Generating vector embeddings for bookmarks",
+    "description": "Rebuilding index description"
+  },
+  "initComplete": {
+    "message": "Initialization Complete",
+    "description": "Init complete status"
+  },
+  "rebuildComplete": {
+    "message": "Rebuild Complete",
+    "description": "Rebuild complete status"
+  },
+  "redirecting": {
+    "message": "Redirecting to search page...",
+    "description": "Redirecting message"
+  },
+  "initFailed": {
+    "message": "Initialization Failed",
+    "description": "Init failed status"
+  },
+  "initTimeout": {
+    "message": "Initialization timeout. Please check your network connection.",
+    "description": "Init timeout error"
+  },
+  "noResults": {
+    "message": "Sorry, no bookmarks found related to \"$QUERY$\".\n\nYou can try:\n• Using more general keywords\n• Try category terms like \"tutorial\", \"video\", \"docs\"",
+    "description": "No results message",
+    "placeholders": {
+      "query": {
+        "content": "$1",
+        "example": "search term"
+      }
+    }
+  },
+  "searchError": {
+    "message": "Sorry, an error occurred during search: $ERROR$",
+    "description": "Search error message",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "error message"
+      }
+    }
+  },
+  "modelNotReady": {
+    "message": "Model not ready",
+    "description": "Model not ready error"
+  },
+  "clearingDatabase": {
+    "message": "Clearing...",
+    "description": "Clearing database status"
+  },
+  "clearFailed": {
+    "message": "Clear failed",
+    "description": "Clear database failed error"
+  }
+}

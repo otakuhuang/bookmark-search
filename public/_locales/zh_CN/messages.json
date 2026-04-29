@@ -1,0 +1,158 @@
+{
+  "extensionName": {
+    "message": "SemaBookmark",
+    "description": "Extension name"
+  },
+  "extensionDescription": {
+    "message": "语义化搜索收藏夹, 推荐合适的页面",
+    "description": "Extension description"
+  },
+  "settings": {
+    "message": "设置",
+    "description": "Settings button tooltip"
+  },
+  "welcomeTitle": {
+    "message": "Bookmark Search",
+    "description": "Welcome page title"
+  },
+  "welcomeDesc": {
+    "message": "输入关键词搜索收藏夹，<br>基于语义相似度返回最相关的结果",
+    "description": "Welcome page description"
+  },
+  "inputPlaceholder": {
+    "message": "请输入关键词...",
+    "description": "Search input placeholder"
+  },
+  "search": {
+    "message": "搜索",
+    "description": "Search button text"
+  },
+  "searching": {
+    "message": "搜索中...",
+    "description": "Searching indicator"
+  },
+  "searchSettings": {
+    "message": "搜索设置",
+    "description": "Settings section title"
+  },
+  "resultLimit": {
+    "message": "显示条数",
+    "description": "Result limit setting label"
+  },
+  "resultLimitDesc": {
+    "message": "0 为不限制",
+    "description": "Result limit description"
+  },
+  "vectorDb": {
+    "message": "向量数据库",
+    "description": "Vector database section title"
+  },
+  "vectorDbDesc": {
+    "message": "收藏夹中的每个书签都会生成向量嵌入，用于语义搜索。重建数据将清空现有索引并重新生成。",
+    "description": "Vector database description"
+  },
+  "rebuildData": {
+    "message": "重建数据",
+    "description": "Rebuild data button text"
+  },
+  "preparing": {
+    "message": "准备中...",
+    "description": "Preparing status text"
+  },
+  "sessionManagement": {
+    "message": "会话管理",
+    "description": "Session management section title"
+  },
+  "sessionDesc": {
+    "message": "清空搜索会话历史记录。",
+    "description": "Session management description"
+  },
+  "clearSession": {
+    "message": "清除会话",
+    "description": "Clear session button text"
+  },
+  "clearing": {
+    "message": "清除中...",
+    "description": "Clearing status text"
+  },
+  "cleared": {
+    "message": "已清除",
+    "description": "Cleared status text"
+  },
+  "initializing": {
+    "message": "正在初始化...",
+    "description": "Initializing status"
+  },
+  "preparing": {
+    "message": "准备中",
+    "description": "Preparing status"
+  },
+  "buildingIndex": {
+    "message": "正在构建索引",
+    "description": "Building index status"
+  },
+  "buildingIndexDesc": {
+    "message": "首次使用时，需要为收藏夹生成向量嵌入",
+    "description": "Building index description"
+  },
+  "rebuildingIndex": {
+    "message": "正在重建索引",
+    "description": "Rebuilding index status"
+  },
+  "rebuildingIndexDesc": {
+    "message": "正在为收藏夹生成向量嵌入",
+    "description": "Rebuilding index description"
+  },
+  "initComplete": {
+    "message": "初始化完成",
+    "description": "Init complete status"
+  },
+  "rebuildComplete": {
+    "message": "重建完成",
+    "description": "Rebuild complete status"
+  },
+  "redirecting": {
+    "message": "即将进入搜索页面...",
+    "description": "Redirecting message"
+  },
+  "initFailed": {
+    "message": "初始化失败",
+    "description": "Init failed status"
+  },
+  "initTimeout": {
+    "message": "初始化超时，请检查网络连接",
+    "description": "Init timeout error"
+  },
+  "noResults": {
+    "message": "抱歉，没有找到与「$QUERY$」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词",
+    "description": "No results message",
+    "placeholders": {
+      "query": {
+        "content": "$1",
+        "example": "search term"
+      }
+    }
+  },
+  "searchError": {
+    "message": "抱歉，搜索时出现问题: $ERROR$",
+    "description": "Search error message",
+    "placeholders": {
+      "error": {
+        "content": "$1",
+        "example": "error message"
+      }
+    }
+  },
+  "modelNotReady": {
+    "message": "模型未就绪",
+    "description": "Model not ready error"
+  },
+  "clearingDatabase": {
+    "message": "清空中...",
+    "description": "Clearing database status"
+  },
+  "clearFailed": {
+    "message": "清空失败",
+    "description": "Clear database failed error"
+  }
+}

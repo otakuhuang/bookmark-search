@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bookmark Search</title>
+  <title>SemaBookmark</title>
   <link rel="stylesheet" href="./index.css">
 </head>
 
@@ -13,8 +13,8 @@
     <div class="header-icon">
       <img src="../../images/icon128.png" alt="logo">
     </div>
-    <div class="header-title">Bookmark Search</div>
-    <button class="settings-btn" id="settingsBtn" title="设置">
+    <div class="header-title">SemaBookmark</div>
+    <button class="settings-btn" id="settingsBtn" data-i18n-title="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="3" />
         <path
@@ -25,14 +25,14 @@
 
   <div class="chat-container" id="chatContainer">
     <div class="welcome-message">
-      <div class="welcome-title">Bookmark Search</div>
-      <div class="welcome-desc">输入关键词搜索收藏夹，<br>基于语义相似度返回最相关的结果</div>
+      <div class="welcome-title" data-i18n="welcomeTitle">SemaBookmark</div>
+      <div class="welcome-desc" data-i18n="welcomeDesc">输入关键词搜索收藏夹，<br>基于语义相似度返回最相关的结果</div>
     </div>
   </div>
 
   <div class="input-area">
-    <input type="text" id="userInput" placeholder="请输入关键词...">
-    <button id="sendBtn">搜索</button>
+    <input type="text" id="userInput" data-i18n-placeholder="inputPlaceholder" placeholder="Enter keywords...">
+    <button id="sendBtn" data-i18n="search">Search</button>
   </div>
 
   <script type="module" src="./main.js"></script>

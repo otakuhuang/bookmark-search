@@ -1,7 +1,7 @@
 // background.js - 轻量级 service worker
 // 所有 embedding 工作都在 popup 中进行（因为 popup 支持 Web Worker）
 
-console.log('Bookmark Search background service worker loaded');
+console.log('SemaBookmark background service worker loaded');
 
 // 监听书签变化
 chrome.bookmarks.onCreated.addListener(() => {

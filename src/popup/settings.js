@@ -4,8 +4,21 @@ import { clearDatabase } from '../utils/rebuild.js';
 
 const SESSION_KEY = 'searchSession';
 
+// i18n 初始化
+function initI18n() {
+  // 替换 data-i18n 属性的文本
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const message = chrome.i18n.getMessage(key);
+    if (message) {
+      el.innerHTML = message;
+    }
+  });
+}
+
 // 初始化
 async function init() {
+  initI18n();
   loadVersion();
   await loadSettings();
   setupEventListeners();
@@ -51,7 +64,7 @@ function setupEventListeners() {
       await clearDatabase();
       window.location.href = 'loading.html?mode=rebuild';
     } catch (err) {
-      console.error('清空失败:', err);
+      console.error(chrome.i18n.getMessage('clearFailed') || 'Clear failed:', err);
       setButtonLoading(false);
     }
   });
@@ -63,18 +76,18 @@ function setupEventListeners() {
 async function clearSession() {
   const btn = document.getElementById('clearBtn');
   btn.disabled = true;
-  btn.textContent = '清除中...';
+  btn.textContent = chrome.i18n.getMessage('clearing') || 'Clearing...';
 
   try {
     await chrome.storage.local.remove([SESSION_KEY]);
-    btn.textContent = '已清除';
+    btn.textContent = chrome.i18n.getMessage('cleared') || 'Cleared';
     setTimeout(() => {
-      btn.textContent = '清除会话';
+      btn.textContent = chrome.i18n.getMessage('clearSession') || 'Clear Session';
       btn.disabled = false;
     }, 1500);
   } catch (err) {
-    console.error('清除会话失败:', err);
-    btn.textContent = '清除会话';
+    console.error('Clear session failed:', err);
+    btn.textContent = chrome.i18n.getMessage('clearSession') || 'Clear Session';
     btn.disabled = false;
   }
 }
@@ -83,5 +96,7 @@ async function clearSession() {
 function setButtonLoading(loading) {
   const btn = document.getElementById('rebuildBtn');
   btn.disabled = loading;
-  btn.textContent = loading ? '清空中...' : '重建数据';
+  btn.textContent = loading 
+    ? (chrome.i18n.getMessage('clearingDatabase') || 'Clearing...')
+    : (chrome.i18n.getMessage('rebuildData') || 'Rebuild Data');
 }

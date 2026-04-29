@@ -1,4 +1,4 @@
-// Bookmark Search - 基于向量相似度
+// SemaBookmark - 基于向量相似度
 
 import { getAllEmbeddings } from '../utils/indexdb.js';
 import { cosine } from '../utils/cosine.js';
@@ -8,8 +8,40 @@ let ready = false;
 let resultLimit = 20;
 const SESSION_KEY = 'searchSession';
 
+// i18n 初始化
+function initI18n() {
+  // 替换 data-i18n 属性的文本
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const message = chrome.i18n.getMessage(key);
+    if (message) {
+      el.innerHTML = message;
+    }
+  });
+
+  // 替换 data-i18n-placeholder 属性的 placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    const message = chrome.i18n.getMessage(key);
+    if (message) {
+      el.placeholder = message;
+    }
+  });
+
+  // 替换 data-i18n-title 属性的 title
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    const message = chrome.i18n.getMessage(key);
+    if (message) {
+      el.title = message;
+    }
+  });
+}
+
 // 初始化
 async function init() {
+  initI18n();
+
   // 检查是否需要构建索引
   const existing = await getAllEmbeddings();
   if (existing.length === 0) {
@@ -63,7 +95,7 @@ function setupEventListeners() {
 // 搜索
 async function search(query) {
   if (!ready) {
-    throw new Error('模型未就绪');
+    throw new Error(chrome.i18n.getMessage('modelNotReady') || 'Model not ready');
   }
 
   const qEmb = await embed(query);
@@ -152,7 +184,9 @@ async function handleSend() {
 
     let response;
     if (displayResults.length === 0) {
-      response = `抱歉，没有找到与「${message}」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词`;
+      const noResultsTemplate = chrome.i18n.getMessage('noResults', message) ||
+        `Sorry, no bookmarks found related to "${message}".\n\nYou can try:\n• Using more general keywords\n• Try category terms like "tutorial", "video", "docs"`;
+      response = noResultsTemplate;
     } else {
       response = formatResults(message, displayResults);
     }
@@ -166,7 +200,9 @@ async function handleSend() {
       timestamp: Date.now()
     });
   } catch (error) {
-    appendMessage('抱歉，搜索时出现问题: ' + error.message, 'ai');
+    const errorTemplate = chrome.i18n.getMessage('searchError', error.message) ||
+      `Sorry, an error occurred during search: ${error.message}`;
+    appendMessage(errorTemplate, 'ai');
   } finally {
     setLoading(false);
   }
@@ -205,7 +241,9 @@ async function loadSession() {
       const aiMsg = document.createElement('div');
       aiMsg.className = 'message message-ai';
       if (entry.results.length === 0) {
-        aiMsg.innerHTML = formatMessage(`抱歉，没有找到与「${entry.query}」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词`);
+        const noResultsTemplate = chrome.i18n.getMessage('noResults', entry.query) ||
+          `Sorry, no bookmarks found related to "${entry.query}".\n\nYou can try:\n• Using more general keywords\n• Try category terms like "tutorial", "video", "docs"`;
+        aiMsg.innerHTML = formatMessage(noResultsTemplate);
       } else {
         aiMsg.innerHTML = formatMessage(formatResults(entry.query, entry.results));
       }
@@ -266,16 +304,17 @@ function setLoading(loading) {
   isLoading = loading;
   userInput.disabled = loading;
   sendBtn.disabled = loading || !ready;
-  sendBtn.textContent = loading ? '...' : '搜索';
+  sendBtn.textContent = loading ? '...' : (chrome.i18n.getMessage('search') || 'Search');
 
   if (loading) {
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'message message-ai';
     loadingDiv.id = 'loadingMessage';
+    const searchingText = chrome.i18n.getMessage('searching') || 'Searching...';
     loadingDiv.innerHTML = `
       <div class="loading">
         <div class="loading-dots"><span></span><span></span><span></span></div>
-        <span class="loading-tip">搜索中...</span>
+        <span class="loading-tip">${searchingText}</span>
       </div>
     `;
     chatContainer.appendChild(loadingDiv);
