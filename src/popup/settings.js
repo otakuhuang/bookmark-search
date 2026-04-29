@@ -2,6 +2,8 @@
 
 import { clearDatabase } from '../utils/rebuild.js';
 
+const SESSION_KEY = 'searchSession';
+
 // 初始化
 async function init() {
   loadVersion();
@@ -53,6 +55,28 @@ function setupEventListeners() {
       setButtonLoading(false);
     }
   });
+
+  document.getElementById('clearBtn').addEventListener('click', clearSession);
+}
+
+// 清除会话
+async function clearSession() {
+  const btn = document.getElementById('clearBtn');
+  btn.disabled = true;
+  btn.textContent = '清除中...';
+
+  try {
+    await chrome.storage.local.remove([SESSION_KEY]);
+    btn.textContent = '已清除';
+    setTimeout(() => {
+      btn.textContent = '清除会话';
+      btn.disabled = false;
+    }, 1500);
+  } catch (err) {
+    console.error('清除会话失败:', err);
+    btn.textContent = '清除会话';
+    btn.disabled = false;
+  }
 }
 
 // 设置按钮状态

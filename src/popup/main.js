@@ -6,6 +6,7 @@ import { embed, waitForReady } from '../utils/workerClient.js';
 
 let ready = false;
 let resultLimit = 20;
+const SESSION_KEY = 'searchSession';
 
 // 初始化
 async function init() {
@@ -19,6 +20,9 @@ async function init() {
   // 加载设置
   const settings = await chrome.storage.sync.get(['resultLimit']);
   resultLimit = settings.resultLimit ?? 20;
+
+  // 加载会话历史
+  await loadSession();
 
   // 初始化 worker
   console.log('[Popup] Calling waitForReady...');
@@ -143,19 +147,72 @@ async function handleSend() {
   try {
     const allResults = await search(message);
 
+    let response;
     if (allResults.length === 0) {
-      appendMessage(`抱歉，没有找到与「${message}」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词`, 'ai');
+      response = `抱歉，没有找到与「${message}」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词`;
     } else {
       const totalCount = allResults.length;
       // 应用结果限制
       const displayResults = resultLimit > 0 ? allResults.slice(0, resultLimit) : allResults;
-      const response = formatResults(message, displayResults, totalCount);
-      appendMessage(response, 'ai');
+      response = formatResults(message, displayResults, totalCount);
     }
+
+    appendMessage(response, 'ai');
+
+    // 保存会话
+    await saveToSession({
+      query: message,
+      results: allResults.map(r => ({ title: r.title, url: r.url, score: r.score })),
+      timestamp: Date.now()
+    });
   } catch (error) {
     appendMessage('抱歉，搜索时出现问题: ' + error.message, 'ai');
   } finally {
     setLoading(false);
+  }
+}
+
+// 保存到会话历史
+async function saveToSession(entry) {
+  const result = await chrome.storage.local.get([SESSION_KEY]);
+  let session = result[SESSION_KEY] || [];
+  session.push(entry);
+  // 限制会话历史最多保存 100 条
+  if (session.length > 100) {
+    session = session.slice(-100);
+  }
+  await chrome.storage.local.set({ [SESSION_KEY]: session });
+}
+
+// 加载会话历史
+async function loadSession() {
+  const result = await chrome.storage.local.get([SESSION_KEY]);
+  const session = result[SESSION_KEY] || [];
+  const chatContainer = document.getElementById('chatContainer');
+
+  if (session.length > 0) {
+    const welcome = chatContainer.querySelector('.welcome-message');
+    if (welcome) welcome.remove();
+
+    for (const entry of session) {
+      // 重建用户消息
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message message-user';
+      userMsg.textContent = entry.query;
+      chatContainer.appendChild(userMsg);
+
+      // 重建 AI 响应
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'message message-ai';
+      const displayResults = resultLimit > 0 ? entry.results.slice(0, resultLimit) : entry.results;
+      if (entry.results.length === 0) {
+        aiMsg.innerHTML = formatMessage(`抱歉，没有找到与「${entry.query}」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词`);
+      } else {
+        aiMsg.innerHTML = formatMessage(formatResults(entry.query, displayResults, entry.results.length));
+      }
+      chatContainer.appendChild(aiMsg);
+    }
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 }
 

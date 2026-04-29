@@ -107,6 +107,35 @@ body {
   color: #666;
 }
 
+.clear-btn {
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background: #dc3545;
+  color: #fff;
+}
+
+.clear-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.clear-btn.loading {
+  background: #e0e0e0;
+  color: #666;
+  border-color: #e0e0e0;
+}
+
 /* 进度条 */
 .progress-container {
   display: none;
