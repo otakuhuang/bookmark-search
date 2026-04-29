@@ -22,8 +22,10 @@ async function loadSettings() {
 
 // 保存设置
 async function saveSettings() {
-  const limit = parseInt(document.getElementById('resultLimit').value) || 20;
+  const inputValue = parseInt(document.getElementById('resultLimit').value, 10);
+  const limit = isNaN(inputValue) ? 20 : inputValue;
   await chrome.storage.sync.set({ resultLimit: limit });
+  document.getElementById('resultLimit').value = limit;
 }
 
 // 设置事件监听

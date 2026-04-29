@@ -223,9 +223,9 @@ function appendMessage(content, type) {
 // 格式化消息中的链接
 function formatMessage(content) {
   const escaped = escapeHtml(content);
-  // 匹配 [标题](URL) 格式
+  // 匹配 [标题](URL) 格式，添加 title 属性用于 tooltip
   return escaped.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" class="recommend-item" target="_blank"><span class="recommend-title">$1</span></a>'
+    '<a href="$2" class="recommend-item" target="_blank" title="$1"><span class="recommend-title">$1</span></a>'
   );
 }
 
