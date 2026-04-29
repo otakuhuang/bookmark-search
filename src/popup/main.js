@@ -1,4 +1,4 @@
-// 收藏夹搜索 - 基于向量相似度
+// Bookmark Search - 基于向量相似度
 
 import { getAllEmbeddings } from '../utils/indexdb.js';
 import { cosine } from '../utils/cosine.js';
@@ -26,11 +26,10 @@ async function init() {
     .then(() => {
       console.log('[Popup] waitForReady resolved');
       ready = true;
-      updateModelStatus('ready');
     })
     .catch((err) => {
       console.error('[Popup] waitForReady error:', err);
-      updateModelStatus('error');
+      ready = false;
     });
 
   setupEventListeners();
@@ -57,35 +56,6 @@ function setupEventListeners() {
   });
 }
 
-// 更新模型状态
-function updateModelStatus(status) {
-  const statusText = document.getElementById('modelStatusText');
-  const downloadBtn = document.getElementById('downloadBtn');
-
-  switch (status) {
-    case 'checking':
-      statusText.textContent = '检查中...';
-      statusText.className = '';
-      break;
-    case 'ready':
-      statusText.textContent = '就绪';
-      statusText.className = 'status-available';
-      downloadBtn.style.display = 'none';
-      break;
-    case 'loading':
-      statusText.textContent = '加载中...';
-      statusText.className = 'status-downloading';
-      break;
-    case 'error':
-      statusText.textContent = '错误';
-      statusText.className = 'status-unavailable';
-      downloadBtn.textContent = '查看要求';
-      downloadBtn.className = 'download-btn btn-view';
-      downloadBtn.style.display = 'block';
-      break;
-  }
-}
-
 // 搜索
 async function search(query) {
   if (!ready) {
@@ -104,13 +74,13 @@ async function search(query) {
     .map(x => {
       // 1. 向量相似度分数 (0-1)
       const vectorScore = cosine(qEmb, x.embedding);
-      
+
       // 2. 关键词匹配分数 (0-1)
       const keywordScore = keywordMatch(query, x.title, x.url);
-      
+
       // 3. 混合打分（向量70% + 关键词30%）
       const finalScore = vectorScore * 0.7 + keywordScore * 0.3;
-      
+
       return {
         ...x,
         score: finalScore,
@@ -127,10 +97,10 @@ async function search(query) {
 // 关键词匹配算法
 function keywordMatch(query, title, url) {
   if (!query || !title) return 0;
-  
+
   const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
   const text = `${title} ${url}`.toLowerCase();
-  
+
   // 精确匹配评分
   let exactMatch = 0;
   for (const word of queryWords) {
@@ -138,10 +108,10 @@ function keywordMatch(query, title, url) {
       exactMatch++;
     }
   }
-  
+
   // 计算精确匹配率
   const exactScore = queryWords.length > 0 ? exactMatch / queryWords.length : 0;
-  
+
   // 计算标题匹配加成（标题匹配比URL匹配更重要）
   let titleMatch = 0;
   for (const word of queryWords) {
@@ -150,7 +120,7 @@ function keywordMatch(query, title, url) {
     }
   }
   const titleBonus = titleMatch / queryWords.length * 0.5;
-  
+
   // 最终分数 = 精确匹配 * 0.7 + 标题加成 * 0.3
   return Math.min(1, exactScore * 0.7 + titleBonus * 0.3);
 }
@@ -243,7 +213,6 @@ function setLoading(loading) {
   sendBtn.textContent = loading ? '...' : '发送';
 
   if (loading) {
-    updateModelStatus('loading');
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'message message-ai';
     loadingDiv.id = 'loadingMessage';
@@ -256,7 +225,6 @@ function setLoading(loading) {
     chatContainer.appendChild(loadingDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
   } else {
-    updateModelStatus(ready ? 'ready' : 'error');
     const loadingMsg = document.getElementById('loadingMessage');
     if (loadingMsg) loadingMsg.remove();
   }

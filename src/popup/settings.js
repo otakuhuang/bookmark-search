@@ -7,6 +7,7 @@ let isRebuilding = false;
 
 // 初始化
 async function init() {
+  loadVersion();
   await loadSettings();
   setupEventListeners();
 }
@@ -18,6 +19,15 @@ async function loadSettings() {
   const result = await chrome.storage.sync.get(['resultLimit']);
   const limit = result.resultLimit ?? 20;
   document.getElementById('resultLimit').value = limit;
+}
+
+// 加载版本号
+function loadVersion() {
+  const manifest = chrome.runtime.getManifest();
+  const versionEl = document.querySelector('.version');
+  if (versionEl) {
+    versionEl.textContent = `${manifest.name} v${manifest.version}`;
+  }
 }
 
 // 保存设置

@@ -25,80 +25,23 @@ body {
 .header-icon {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
-.header-icon svg {
-  width: 16px;
-  height: 16px;
-  color: #fff;
+.header-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .header-title {
   font-size: 16px;
   font-weight: 600;
   color: #333;
-}
-
-.model-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  font-size: 12px;
-}
-
-.model-status-text {
-  padding: 4px 8px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.model-status-text:hover {
-  filter: brightness(0.95);
-}
-
-.download-btn {
-  padding: 4px 10px;
-  font-size: 11px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.download-btn:hover {
-  opacity: 0.8;
-}
-
-.btn-download {
-  background: #667eea;
-  color: #fff;
-}
-
-.btn-view {
-  background: #e0e0e0;
-  color: #333;
-}
-
-.status-available {
-  background: #e8f5e9;
-  color: #2e7d32;
-}
-
-.status-downloading {
-  background: #fff3e0;
-  color: #f57c00;
-}
-
-.status-unavailable {
-  background: #ffebee;
-  color: #c62828;
 }
 
 .settings-btn {
@@ -112,7 +55,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
-  margin-left: 8px;
+  margin-left: auto;
 }
 
 .settings-btn:hover {

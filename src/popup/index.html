@@ -4,34 +4,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>收藏夹搜索</title>
+  <title>Bookmark Search</title>
   <link rel="stylesheet" href="./index.css">
 </head>
 
 <body>
   <div class="header">
     <div class="header-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
-        <path d="M12 6a6 6 0 0 0-6 6 6 6 0 0 0 6 6 6 6 0 0 0 6-6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z" />
-      </svg>
+      <img src="../../images/icon128.png" alt="logo">
     </div>
-    <div class="header-title">收藏夹搜索</div>
-    <div class="model-status" id="modelStatus">
-      <span class="model-status-text" id="modelStatusText">检查中...</span>
-      <button class="download-btn" id="downloadBtn" style="display: none;"></button>
-    </div>
+    <div class="header-title">Bookmark Search</div>
     <button class="settings-btn" id="settingsBtn" title="设置">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="3" />
-        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        <path
+          d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
       </svg>
     </button>
   </div>
 
   <div class="chat-container" id="chatContainer">
     <div class="welcome-message">
-      <div class="welcome-title">收藏夹搜索</div>
+      <div class="welcome-title">Bookmark Search</div>
       <div class="welcome-desc">输入关键词搜索收藏夹，<br>基于语义相似度返回最相关的结果</div>
     </div>
   </div>
