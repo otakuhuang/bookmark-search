@@ -1,6 +1,6 @@
 {
   "name": "Bookmark Search",
-  "description": "通过对话分析收藏夹, 推荐合适的页面",
+  "description": "语义化搜索收藏夹, 推荐合适的页面",
   "version": "1.0.0",
   "manifest_version": 3,
   "permissions": [

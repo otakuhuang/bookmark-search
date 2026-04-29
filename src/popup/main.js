@@ -147,14 +147,14 @@ async function handleSend() {
   try {
     const allResults = await search(message);
 
+    // 应用结果限制
+    const displayResults = resultLimit > 0 ? allResults.slice(0, resultLimit) : allResults;
+
     let response;
-    if (allResults.length === 0) {
+    if (displayResults.length === 0) {
       response = `抱歉，没有找到与「${message}」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词`;
     } else {
-      const totalCount = allResults.length;
-      // 应用结果限制
-      const displayResults = resultLimit > 0 ? allResults.slice(0, resultLimit) : allResults;
-      response = formatResults(message, displayResults, totalCount);
+      response = formatResults(message, displayResults);
     }
 
     appendMessage(response, 'ai');
@@ -162,7 +162,7 @@ async function handleSend() {
     // 保存会话
     await saveToSession({
       query: message,
-      results: allResults.map(r => ({ title: r.title, url: r.url, score: r.score })),
+      results: displayResults.map(r => ({ title: r.title, url: r.url, score: r.score })),
       timestamp: Date.now()
     });
   } catch (error) {
@@ -201,14 +201,13 @@ async function loadSession() {
       userMsg.textContent = entry.query;
       chatContainer.appendChild(userMsg);
 
-      // 重建 AI 响应
+      // 重建 AI 响应（会话历史保持原始数据，不受限制条数影响）
       const aiMsg = document.createElement('div');
       aiMsg.className = 'message message-ai';
-      const displayResults = resultLimit > 0 ? entry.results.slice(0, resultLimit) : entry.results;
       if (entry.results.length === 0) {
         aiMsg.innerHTML = formatMessage(`抱歉，没有找到与「${entry.query}」相关的收藏夹。\n\n可以尝试：\n• 使用更通用的关键词\n• 尝试「教程」「视频」「文档」等类别词`);
       } else {
-        aiMsg.innerHTML = formatMessage(formatResults(entry.query, displayResults, entry.results.length));
+        aiMsg.innerHTML = formatMessage(formatResults(entry.query, entry.results));
       }
       chatContainer.appendChild(aiMsg);
     }
@@ -217,14 +216,14 @@ async function loadSession() {
 }
 
 // 格式化搜索结果
-function formatResults(query, results, totalCount) {
-  let response = `根据「${query}」，找到 ${totalCount} 个相关收藏夹：\n\n`;
+function formatResults(query, results) {
+  let response = '';
 
   results.forEach((r) => {
     response += `[${r.title}](${r.url})\n`;
   });
 
-  return response;
+  return response.trim();
 }
 
 // 添加消息
@@ -267,7 +266,7 @@ function setLoading(loading) {
   isLoading = loading;
   userInput.disabled = loading;
   sendBtn.disabled = loading || !ready;
-  sendBtn.textContent = loading ? '...' : '发送';
+  sendBtn.textContent = loading ? '...' : '搜索';
 
   if (loading) {
     const loadingDiv = document.createElement('div');
